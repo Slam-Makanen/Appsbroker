@@ -9,10 +9,10 @@ provider "google-beta" {
 }
 
 terraform {
-  required_version = "1.0.11"
+  required_version = "1.1.6"
 
   backend "gcs" {
-    bucket = "slam-tfstate"
+    bucket = "slamtf-state"
     prefix = "slam-environment-1981"
   }
 }
