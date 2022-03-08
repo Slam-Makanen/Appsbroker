@@ -39,7 +39,7 @@ resource "google_sql_database_instance" "appsbroker_sql" {
     tier = "db-f1-micro"
 
     disk_size         = 10
-    disk_type         = "PD_STANDARD"
+    disk_type         = "PD_HDD"
     availability_type = "ZONAL"
 
     backup_configuration {
@@ -54,7 +54,7 @@ resource "google_sql_database_instance" "appsbroker_sql" {
     }
 
     ip_configuration {
-      ipv4_enabled    = true
+      ipv4_enabled    = false
       private_network = google_compute_network.private_network.id
 
     }

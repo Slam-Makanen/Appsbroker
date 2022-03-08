@@ -33,6 +33,6 @@ resource "google_compute_address" "static_int_lb_ip" {
   name         = "static-int-lb-ip"
   subnetwork   = var.subnet
   address_type = "INTERNAL"
-  address      = "10.14.233.74"
+  address      = "10.154.10.20"
   region       = var.region
 }

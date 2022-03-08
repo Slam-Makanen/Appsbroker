@@ -20,6 +20,7 @@ resource "google_compute_region_instance_group_manager" "appsbroker_igm" {
     instance_template = google_compute_instance_template.appsbroker_instance_template.id
   }
 
+  target_size  = 1
 
 }
 
@@ -33,9 +34,9 @@ resource "google_compute_region_autoscaler" "autoscaler" {
   target = google_compute_region_instance_group_manager.appsbroker_igm.self_link
 
   autoscaling_policy {
-    max_replicas    = 1
+    max_replicas    = 3
     min_replicas    = 1
-    mode            = "OFF"
+    mode            = "ON"
     cooldown_period = 120
     cpu_utilization {
       target = 0.8
