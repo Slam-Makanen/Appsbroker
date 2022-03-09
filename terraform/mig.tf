@@ -1,5 +1,4 @@
 resource "google_compute_region_instance_group_manager" "appsbroker_igm" {
-  #   provider = google-beta
   name    = "appsbroker-igm"
   project = var.project_id
   region  = var.region
@@ -21,7 +20,6 @@ resource "google_compute_region_instance_group_manager" "appsbroker_igm" {
   target_size  = 1
 
 }
-
 
 resource "google_compute_region_autoscaler" "autoscaler" {
   name    = "appsbroker-autoscaler"
