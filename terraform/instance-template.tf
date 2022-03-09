@@ -1,56 +1,44 @@
-# module "gce-advanced-container" {
-#   source  = "terraform-google-modules/container-vm/google"
-#   version = "~> 2.0"
-
-#   container = {
-#     image = "eu.gcr.io/bmg-cashmatch-staging/bmg-cashmatch"
-
-#     securityContext = {
-#       privileged : true
-#     }
-
-#     env = [
-#       {
-#         name  = "SPRING_PROFILES_ACTIVE"
-#         value = "gcp.stag"
-#       }
-#     ],
-
-#     restart_policy = "OnFailure"
-#   }
-# }
-
+# instance template
 resource "google_compute_instance_template" "appsbroker_instance_template" {
-  name = "appsbroker-template-green"
-
-  # tags = ["cashmatch-web-staging", "allow-corporate-access", "allow-healthchecks", "allow-proxy-connection", "allow-vpn-access", "bmg-frontend-proxy", "bmg-proxy-access", "bmg-cashmatch", "bmg-cashmatch-web", "allow-egress-appstaging", "cashmatch"]
-
-  instance_description = "appsbroker instances"
-  machine_type         = "e2-micro"
-  can_ip_forward       = false
-
-  disk {
-    source_image = "projects/cos-cloud/global/images/family/cos-stable"
-    auto_delete  = true
-    boot         = true
-    disk_size_gb = "20"
-    disk_type    = "pd-standard"
-  }
-
+  name         = "appsbroker-template-green"
+  provider     = google-beta
+  machine_type = "e2-micro"
+  tags         = ["http-server"]
 
   network_interface {
-    network    = var.network
-    subnetwork = var.subnet
+  network    = google_compute_network.int_lb_network.id
+  subnetwork = google_compute_subnetwork.int_lb_subnet.id
+  }
+  disk {
+    source_image = "debian-cloud/debian-10"
+    auto_delete  = true
+    boot         = true
   }
 
-  # metadata = merge(var.additional_metadata, map("gce-container-declaration", module.gce-advanced-container.metadata_value))
+  # Install nginx and serve a simple web page
+  metadata = {
+    startup-script = <<-EOF1
+      #! /bin/bash
+      set -euo pipefail
 
-  # labels = {
-  #   appsbroker-os = "cos"
-  # }
+      export DEBIAN_FRONTEND=noninteractive
+      apt-get update
+      apt-get install -y nginx-light jq
 
-  # service_account {
-  #   email  = google_service_account.cashmatch-staging-sva.email
-  #   scopes = ["cloud-platform"]
-  # }
+      NAME=$(curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/hostname")
+      IP=$(curl -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/network-interfaces/0/ip")
+      METADATA=$(curl -f -H "Metadata-Flavor: Google" "http://metadata.google.internal/computeMetadata/v1/instance/attributes/?recursive=True" | jq 'del(.["startup-script"])')
+
+      cat <<EOF > /var/www/html/index.html
+      <pre>
+      Name: $NAME
+      IP: $IP
+      Metadata: $METADATA
+      </pre>
+      EOF
+    EOF1
+  }
+  lifecycle {
+    create_before_destroy = true
+  }
 }
