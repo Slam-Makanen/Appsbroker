@@ -1,5 +1,4 @@
 resource "google_compute_region_instance_group_manager" "appsbroker_igm" {
-  #   provider = google-beta
   name    = "appsbroker-igm"
   project = var.project_id
   region  = var.region
@@ -12,11 +11,9 @@ resource "google_compute_region_instance_group_manager" "appsbroker_igm" {
     initial_delay_sec = 300
   }
 
-
   base_instance_name = "appsbroker"
 
   version {
-    name              = "0-1622787928774"
     instance_template = google_compute_instance_template.appsbroker_instance_template.id
   }
 
@@ -24,9 +21,7 @@ resource "google_compute_region_instance_group_manager" "appsbroker_igm" {
 
 }
 
-
 resource "google_compute_region_autoscaler" "autoscaler" {
-  #   provider = google
   name    = "appsbroker-autoscaler"
   project = var.project_id
   region  = var.region

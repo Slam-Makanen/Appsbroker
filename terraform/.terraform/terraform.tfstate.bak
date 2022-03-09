@@ -1,0 +1,28 @@
+{
+    "version": 3,
+    "serial": 1,
+    "lineage": "90602392-8639-d64a-59b2-3c1e2adac9f4",
+    "backend": {
+        "type": "gcs",
+        "config": {
+            "access_token": null,
+            "bucket": "slamtf-state",
+            "credentials": null,
+            "encryption_key": null,
+            "impersonate_service_account": null,
+            "impersonate_service_account_delegates": null,
+            "prefix": "slam-environment-1981"
+        },
+        "hash": 635921961
+    },
+    "modules": [
+        {
+            "path": [
+                "root"
+            ],
+            "outputs": {},
+            "resources": {},
+            "depends_on": []
+        }
+    ]
+}
