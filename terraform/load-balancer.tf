@@ -5,12 +5,14 @@ resource "google_compute_network" "int_lb_network" {
   auto_create_subnetworks = false
 }
 
-# Backend subnet
-resource "google_compute_subnetwork" "int_lb_subnet" {
-  name          = "appsbroker-subnet"
+# Proxy-only subnet
+resource "google_compute_subnetwork" "appsbroker_proxy_subnet" {
+  name          = "appsbroker-proxy-subnet"
   provider      = google-beta
-  ip_cidr_range = "10.0.1.0/24"
+  ip_cidr_range = "10.0.0.0/24"
   region        = var.region
+  purpose       = "INTERNAL_HTTPS_LOAD_BALANCER"
+  role          = "ACTIVE"
   network       = google_compute_network.int_lb_network.id
 }
 
