@@ -15,7 +15,7 @@ variable "zone" {
 
 variable "zones" {
   description = "GCP zone identifier"
-  type        = list
+  type        = list(any)
 }
 
 variable "network" {
