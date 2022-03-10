@@ -27,7 +27,7 @@ resource "google_service_networking_connection" "private_vpc_connection" {
 # SQL Instance
 resource "google_sql_database_instance" "appsbroker_sql" {
 
-  name                = "appsbroker-db-1"
+  name                = "appsbroker-db-2"
   database_version    = "MYSQL_5_7"
   region              = var.region
   deletion_protection = false

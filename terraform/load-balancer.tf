@@ -5,17 +5,6 @@ resource "google_compute_network" "int_lb_network" {
   auto_create_subnetworks = false
 }
 
-# Proxy-only subnet
-resource "google_compute_subnetwork" "appsbroker_proxy_subnet" {
-  name          = "appsbroker-proxy-subnet"
-  provider      = google-beta
-  ip_cidr_range = "10.0.0.0/24"
-  region        = var.region
-  purpose       = "INTERNAL_HTTPS_LOAD_BALANCER"
-  role          = "ACTIVE"
-  network       = google_compute_network.int_lb_network.id
-}
-
 # Backend subnet
 resource "google_compute_subnetwork" "int_lb_subnet" {
   name          = "appsbroker-subnet"
@@ -25,41 +14,44 @@ resource "google_compute_subnetwork" "int_lb_subnet" {
   network       = google_compute_network.int_lb_network.id
 }
 
-# HTTP target proxy
-resource "google_compute_region_target_http_proxy" "default" {
-  name     = "int-lb-target-http-proxy"
+# Reserved IP address
+resource "google_compute_global_address" "default" {
   provider = google-beta
-  region   = var.region
-  url_map  = google_compute_region_url_map.default.id
+  name     = "apps-lb-static-ip"
+}
+
+# Forwarding rule
+resource "google_compute_global_forwarding_rule" "default" {
+  name                  = "apps-lb-forwarding-rule"
+  provider              = google-beta
+  ip_protocol           = "TCP"
+  load_balancing_scheme = "EXTERNAL"
+  port_range            = "80"
+  target                = google_compute_target_http_proxy.default.id
+  ip_address            = google_compute_global_address.default.id
+}
+
+# HTTP proxy
+resource "google_compute_target_http_proxy" "default" {
+  name     = "target-http-proxy"
+  provider = google-beta
+  url_map  = google_compute_url_map.default.id
 }
 
 # URL map
-resource "google_compute_region_url_map" "default" {
-  name            = "int-lb-regional-url-map"
+resource "google_compute_url_map" "default" {
+  name            = "url-map"
   provider        = google-beta
-  region          = var.region
-  default_service = google_compute_region_backend_service.appsbroker_backend.id
-}
-
-# Frontend
-resource "google_compute_forwarding_rule" "appsbroker_fwd_rule" {
-  name                  = "appsbroker-forwarding-rule"
-  region                = var.region
-  ip_protocol           = "TCP"
-  load_balancing_scheme = "INTERNAL_MANAGED"
-  port_range            = "80"
-  target                = google_compute_region_target_http_proxy.default.id
-  network               = google_compute_network.int_lb_network.id
-  subnetwork            = google_compute_subnetwork.int_lb_subnet.id
+  default_service = google_compute_backend_service.appsbroker_backend.id
 }
 
 # Backend
-resource "google_compute_region_backend_service" "appsbroker_backend" {
-  load_balancing_scheme = "INTERNAL_MANAGED"
-  region                          = var.region
+resource "google_compute_backend_service" "appsbroker_backend" {
   name                            = "appsbroker-backend"
   protocol                        = "HTTP"
+  load_balancing_scheme           = "EXTERNAL"
   timeout_sec                     = 10
+  enable_cdn                      = true
   connection_draining_timeout_sec = 300
   backend {
     group           = google_compute_region_instance_group_manager.appsbroker_igm.instance_group

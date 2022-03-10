@@ -17,7 +17,7 @@ resource "google_compute_region_instance_group_manager" "appsbroker_igm" {
     instance_template = google_compute_instance_template.appsbroker_instance_template.id
   }
 
-  target_size  = 1
+  target_size = 1
 
 }
 
